@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react"
-
+import { useDebouncedCallback } from "use-debounce"
 function EditorChat() {
   const [socket, setSocket] = useState(null)
   const [username, setUsername] = useState("")
@@ -36,23 +36,26 @@ function EditorChat() {
     if (socket) {
       socket.onmessage = (event) => {
         const data = JSON.parse(event.data)
-        console.log(data)
         setMessage(data)
       }
     }
   }, [socket])
-
+  const onChange = (e) => {
+    setMessage(e.target.value)
+    debounced()
+  }
   const handleSubmit = (event) => {
-    event.preventDefault()
     if (message && socket) {
       const data = {
         message: message,
         username: username,
       }
       socket.send(JSON.stringify(data))
-      setMessage("")
     }
   }
+  const debounced = useDebouncedCallback(() => {
+    handleSubmit()
+  }, 3000)
 
   return (
     <div
@@ -65,16 +68,15 @@ function EditorChat() {
       </div>
       <br />
       <br />
-      <form onSubmit={handleSubmit}>
+      <form>
         <textarea
           rows="10"
           style={{ width: "100%" }}
           type="text"
           placeholder="Type a message..."
           value={message}
-          onChange={(event) => setMessage(event.target.value)}
+          onChange={onChange}
         />
-        <button type="submit">👍 Send</button>
       </form>
     </div>
   )
