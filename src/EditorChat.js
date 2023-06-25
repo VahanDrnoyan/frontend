@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useCallback } from "react"
 import { useDebouncedCallback } from "use-debounce"
 function EditorChat() {
   const [socket, setSocket] = useState(null)
@@ -44,7 +44,8 @@ function EditorChat() {
     setMessage(e.target.value)
     debounced()
   }
-  const handleSubmit = (event) => {
+
+  const handleSubmit = useCallback(() => {
     if (message && socket) {
       const data = {
         message: message,
@@ -52,7 +53,7 @@ function EditorChat() {
       }
       socket.send(JSON.stringify(data))
     }
-  }
+  }, [message, socket, username])
   const debounced = useDebouncedCallback(() => {
     handleSubmit()
   }, 3000)
